@@ -31,12 +31,7 @@ impl ExecutionProvider {
             Self::CoreMl => {
                 #[cfg(feature = "coreml")]
                 {
-                    use ort::execution_providers::coreml::ComputeUnits;
-                    use ort::execution_providers::coreml::ModelFormat;
-                    ort::execution_providers::CoreMLExecutionProvider::default()
-                        .with_model_format(ModelFormat::MLProgram)
-                        .with_compute_units(ComputeUnits::All)
-                        .build()
+                    ort::execution_providers::CoreMLExecutionProvider::default().build()
                 }
                 #[cfg(not(feature = "coreml"))]
                 {
