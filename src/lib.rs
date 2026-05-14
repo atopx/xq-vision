@@ -15,7 +15,7 @@
 //!
 //! let image = image::open("board.jpg")?.to_rgb8();
 //! let result = vision.recognize(&image)?;
-//! println!("{}", result.pieces().to_fen_placement());
+//! println!("{}", result.to_fen());
 //! # Ok(())
 //! # }
 //! ```
@@ -81,11 +81,11 @@ pub use types::BoardCoord;
 pub use types::BoardCorners;
 pub use types::BoardImage;
 pub use types::CellPrediction;
-pub use types::KingPositions;
 pub use types::PieceKind;
 pub use types::Point2f;
 pub use types::RecognitionResult;
 pub use types::RectF;
+pub use types::SideToMove;
 pub use vision::XqVision;
 pub use vision::XqVisionBuilder;
 

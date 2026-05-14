@@ -27,8 +27,8 @@ pub enum XqVisionError {
     #[error("invalid piece class index {0}")]
     InvalidPieceIndex(u8),
 
-    #[error("recognition result is missing one or both kings")]
-    MissingKings,
+    #[error("invalid board recognition result")]
+    InvalidBoard,
 
     #[error("execution provider {provider:?} requires an enabled Cargo feature or supported platform")]
     UnsupportedProvider { provider: ExecutionProvider },

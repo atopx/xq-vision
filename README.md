@@ -57,7 +57,7 @@ fn main() -> xq_vision::Result<()> {
         .build()?;
 
     let result = vision.recognize(&image)?;
-    println!("{}", result.pieces().to_fen_placement());
+    println!("{}", result.to_fen());
     Ok(())
 }
 ```
@@ -75,7 +75,8 @@ fn main() -> xq_vision::Result<()> {
     let detection = board_detector.detect(&image)?;
     let board = warp_board(&image, detection.corners)?;
     let pieces = piece_recognizer.recognize(&board)?;
-    println!("{:?}", pieces.king_positions()?);
+    let side_to_move = pieces.infer_side_to_move()?;
+    println!("{}", pieces.to_fen(side_to_move));
     Ok(())
 }
 ```

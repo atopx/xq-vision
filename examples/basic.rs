@@ -38,7 +38,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     fs::write(&html_path, html)?;
 
     println!("wrote {}", html_path.display());
-    println!("fen {}", result.pieces().to_fen_placement());
+    println!("fen {}", result.to_fen());
 
     Ok(())
 }
