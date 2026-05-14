@@ -1,0 +1,33 @@
+[package]
+name = "xq-vision"
+version = "0.1.0"
+edition = "2024"
+authors = ["atopx"]
+license = "MIT"
+description = "High-performance ONNX recognition pipeline for Chinese chessboard corners and pieces."
+repository = "https://github.com/atopx/xq-vision"
+readme = "README.md"
+keywords = ["xiangqi", "chinese-chess", "onnx", "vision", "recognition"]
+categories = ["computer-vision", "science"]
+include = ["src", "LICENSE", "Cargo.toml", "README.md"]
+
+[features]
+default = ["runtime-download", "fast-path"]
+cpu = []
+fast-path = []
+bench-support = []
+runtime-download = ["ort/download-binaries", "ort/copy-dylibs", "ort/tls-native"]
+load-dynamic = ["ort/load-dynamic"]
+coreml = ["ort/coreml"]
+cuda = ["ort/cuda"]
+tensorrt = ["ort/tensorrt"]
+directml = ["ort/directml"]
+openvino = ["ort/openvino"]
+xnnpack = ["ort/xnnpack"]
+
+[dependencies]
+ort = { version = "=2.0.0-rc.12", default-features = false, features = ["std", "ndarray", "api-24"] }
+ndarray = "0.17"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
+nalgebra = "0.34.2"
+thiserror = "2"
