@@ -85,7 +85,7 @@ pub use types::PieceKind;
 pub use types::Point2f;
 pub use types::RecognitionResult;
 pub use types::RectF;
-pub use types::SideToMove;
+pub use types::Side;
 pub use vision::XqVision;
 pub use vision::XqVisionBuilder;
 

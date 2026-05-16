@@ -18,7 +18,7 @@ use crate::types::BoardImage;
 use crate::types::CellPrediction;
 use crate::types::PIECE_CLASSES;
 use crate::types::PieceKind;
-use crate::types::SideToMove;
+use crate::types::Side;
 
 pub const PIECE_SHORT: [char; PIECE_CLASSES] =
     ['.', 'x', 'K', 'A', 'B', 'N', 'R', 'C', 'P', 'k', 'a', 'b', 'n', 'r', 'c', 'p'];
@@ -111,23 +111,23 @@ impl PieceRecognition {
         PieceSnapshot { indexes, shorts, confidence }
     }
 
-    pub fn infer_side_to_move(&self) -> Result<SideToMove> {
-        let mut side_to_move = None;
+    pub fn user_side(&self) -> Result<Side> {
+        let mut user_side = None;
         for row in self.cells.iter().skip(BOARD_RANKS / 2) {
             for cell in row {
                 let side = match cell.piece {
-                    PieceKind::RedKing => SideToMove::Red,
-                    PieceKind::BlackKing => SideToMove::Black,
+                    PieceKind::RedKing => Side::Red,
+                    PieceKind::BlackKing => Side::Black,
                     _ => continue,
                 };
-                match side_to_move {
+                match user_side {
                     Some(existing) if existing != side => return Err(XqVisionError::InvalidBoard),
                     Some(_) => {}
-                    None => side_to_move = Some(side),
+                    None => user_side = Some(side),
                 }
             }
         }
-        side_to_move.ok_or(XqVisionError::InvalidBoard)
+        user_side.ok_or(XqVisionError::InvalidBoard)
     }
 
     #[must_use]
@@ -157,9 +157,7 @@ impl PieceRecognition {
     }
 
     #[must_use]
-    pub fn to_fen(&self, side_to_move: SideToMove) -> String {
-        format!("{} {}", self.to_fen_placement(), side_to_move.fen_char())
-    }
+    pub fn to_fen(&self, side: Side) -> String { format!("{} {}", self.to_fen_placement(), side.fen_char()) }
 }
 
 pub struct PieceRecognizer {
@@ -275,12 +273,12 @@ mod tests {
         let recognition = PieceRecognizer::decode_logits(&logits)?;
         assert_eq!(recognition.cells()[0][0].piece, PieceKind::RedKing);
         assert_eq!(recognition.cells()[9][8].piece, PieceKind::BlackKing);
-        assert_eq!(recognition.infer_side_to_move()?, SideToMove::Black);
+        assert_eq!(recognition.user_side()?, Side::Black);
         Ok(())
     }
 
     #[test]
-    fn side_to_move_uses_lower_half_red_king() -> Result<()> {
+    fn user_side_uses_lower_half_red_king() -> Result<()> {
         let mut logits = vec![0.0_f32; BOARD_CELLS * PIECE_CLASSES];
         for cell in 0..BOARD_CELLS {
             logits[cell * PIECE_CLASSES + PieceKind::Empty.index() as usize] = 1.0;
@@ -292,12 +290,12 @@ mod tests {
         logits[red_cell * PIECE_CLASSES + PieceKind::RedKing.index() as usize] = 9.0;
 
         let recognition = PieceRecognizer::decode_logits(&logits)?;
-        assert_eq!(recognition.infer_side_to_move()?, SideToMove::Red);
+        assert_eq!(recognition.user_side()?, Side::Red);
         Ok(())
     }
 
     #[test]
-    fn side_to_move_rejects_missing_lower_half_king() -> Result<()> {
+    fn user_side_rejects_missing_lower_half_king() -> Result<()> {
         let mut logits = vec![0.0_f32; BOARD_CELLS * PIECE_CLASSES];
         for cell in 0..BOARD_CELLS {
             logits[cell * PIECE_CLASSES + PieceKind::Empty.index() as usize] = 1.0;
@@ -306,12 +304,12 @@ mod tests {
         logits[PieceKind::BlackKing.index() as usize] = 8.0;
 
         let recognition = PieceRecognizer::decode_logits(&logits)?;
-        assert!(matches!(recognition.infer_side_to_move(), Err(XqVisionError::InvalidBoard)));
+        assert!(matches!(recognition.user_side(), Err(XqVisionError::InvalidBoard)));
         Ok(())
     }
 
     #[test]
-    fn side_to_move_rejects_conflicting_lower_half_kings() -> Result<()> {
+    fn user_side_rejects_conflicting_lower_half_kings() -> Result<()> {
         let mut logits = vec![0.0_f32; BOARD_CELLS * PIECE_CLASSES];
         for cell in 0..BOARD_CELLS {
             logits[cell * PIECE_CLASSES + PieceKind::Empty.index() as usize] = 1.0;
@@ -324,7 +322,7 @@ mod tests {
         logits[black_cell * PIECE_CLASSES + PieceKind::BlackKing.index() as usize] = 8.0;
 
         let recognition = PieceRecognizer::decode_logits(&logits)?;
-        assert!(matches!(recognition.infer_side_to_move(), Err(XqVisionError::InvalidBoard)));
+        assert!(matches!(recognition.user_side(), Err(XqVisionError::InvalidBoard)));
         Ok(())
     }
 
@@ -344,7 +342,7 @@ mod tests {
     }
 
     #[test]
-    fn fen_includes_side_to_move() -> Result<()> {
+    fn fen_includes_user_side() -> Result<()> {
         let mut logits = vec![0.0_f32; BOARD_CELLS * PIECE_CLASSES];
         for cell in 0..BOARD_CELLS {
             logits[cell * PIECE_CLASSES + PieceKind::Empty.index() as usize] = 1.0;
@@ -353,8 +351,8 @@ mod tests {
         logits[PieceKind::BlackRook.index() as usize] = 5.0;
 
         let recognition = PieceRecognizer::decode_logits(&logits)?;
-        assert_eq!(recognition.to_fen(SideToMove::Red), "r8/9/9/9/9/9/9/9/9/9 w");
-        assert_eq!(recognition.to_fen(SideToMove::Black), "r8/9/9/9/9/9/9/9/9/9 b");
+        assert_eq!(recognition.to_fen(Side::Red), "r8/9/9/9/9/9/9/9/9/9 w");
+        assert_eq!(recognition.to_fen(Side::Black), "r8/9/9/9/9/9/9/9/9/9 b");
         Ok(())
     }
 

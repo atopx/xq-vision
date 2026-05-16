@@ -26,8 +26,8 @@ impl XqVision {
         let board_detection = self.board_detector.detect(image)?;
         let board = warp_board(image, board_detection.corners)?;
         let pieces = self.piece_recognizer.recognize(&board)?;
-        let side_to_move = pieces.infer_side_to_move()?;
-        Ok(RecognitionResult::new(board_detection.corners, board_detection.scores, board, pieces, side_to_move))
+        let user_side = pieces.user_side()?;
+        Ok(RecognitionResult::new(board_detection.corners, board_detection.scores, board, pieces, user_side))
     }
 
     #[must_use]

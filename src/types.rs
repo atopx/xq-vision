@@ -130,12 +130,12 @@ impl BoardCoord {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum SideToMove {
+pub enum Side {
     Red,
     Black,
 }
 
-impl SideToMove {
+impl Side {
     #[must_use]
     pub const fn fen_char(self) -> char {
         match self {
@@ -262,16 +262,16 @@ pub struct RecognitionResult {
     corner_scores: [f32; 4],
     board: BoardImage,
     pieces: crate::pieces::PieceRecognition,
-    side_to_move: SideToMove,
+    user_side: Side,
 }
 
 impl RecognitionResult {
     #[must_use]
     pub(crate) fn new(
         corners: BoardCorners, corner_scores: [f32; 4], board: BoardImage, pieces: crate::pieces::PieceRecognition,
-        side_to_move: SideToMove,
+        user_side: Side,
     ) -> Self {
-        Self { corners, corner_scores, board, pieces, side_to_move }
+        Self { corners, corner_scores, board, pieces, user_side }
     }
 
     #[must_use]
@@ -287,14 +287,14 @@ impl RecognitionResult {
     pub fn pieces(&self) -> &crate::pieces::PieceRecognition { &self.pieces }
 
     #[must_use]
-    pub fn side_to_move(&self) -> SideToMove { self.side_to_move }
+    pub fn user_side(&self) -> Side { self.user_side }
 
     #[must_use]
-    pub fn to_fen(&self) -> String { self.pieces.to_fen(self.side_to_move) }
+    pub fn to_fen(&self) -> String { self.pieces.to_fen(self.user_side) }
 
     #[must_use]
-    pub fn into_parts(self) -> (BoardCorners, [f32; 4], BoardImage, crate::pieces::PieceRecognition, SideToMove) {
-        (self.corners, self.corner_scores, self.board, self.pieces, self.side_to_move)
+    pub fn into_parts(self) -> (BoardCorners, [f32; 4], BoardImage, crate::pieces::PieceRecognition, Side) {
+        (self.corners, self.corner_scores, self.board, self.pieces, self.user_side)
     }
 }
 
